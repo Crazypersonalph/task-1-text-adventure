@@ -25,3 +25,15 @@ I fixed this by making the server game loop asynchronous, however this caused a 
 I fixed all these issues by implementing a queue system (much like the current_log in my pseudocode) that gives the server main loop a list of all the users connected, instead of the list being empty when the process forked.
 
 I also moved the generation of the initial game frame to main game loop. Now the game runs smoothly.
+
+# Error 3
+```
+json.decoder.JSONDecodeError: Extra data: line 1 column 161 (char 160)
+```
+This error was a runtime error. It happened due to how in the TCP protocol, a sending of a buffer of 4096 bytes is not equal to the receiving of a buffer of 4096 bytes. This means that one socket receive could include multiple socket message sends.
+
+There are two main ways to solve such an error.
+1. Including the message length as a prefix to the message
+2. Separating each message with a delimiter.
+
+I went with the second option, as it is a quick and dirty fix, that works fine for my purposes.

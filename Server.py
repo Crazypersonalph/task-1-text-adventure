@@ -28,32 +28,50 @@ sel = selectors.DefaultSelector()
 
 def start_game(queue: mp.Queue, keyQueue: mp.Queue):
     grid = np.full((ROWS, COLS), EMPTY_SYMBOL, dtype=int)
-    grid[1, 0] = CAR_SYMBOL
+    car_x_pos = 0
+    car_y_pos = 1
+
+    grid[car_y_pos, car_x_pos] = CAR_SYMBOL
     
     users = queue.get()
 
     while True:
+        print(users)
 
         grid[:, :-1] = grid[:, 1:]
         grid[random.randint(0,ROWS-1), -1] = random.choice([0,0,0,2])
 
+        grid[car_y_pos, car_x_pos] += CAR_SYMBOL
+
+        Kqueue = [0, 0]
         
         if keyQueue.qsize() > 0:
-            print(keyQueue.get_nowait())
+            Kqueue = keyQueue.get_nowait()
 
-        """
-        if current_user_input[0] == 1 and current_user_input[1] == 1:
-            print("up")
-        elif current_user_input[0] == 2 and current_user_input[1] == 2:
-            print("down")"
-        """
+        if Kqueue[0] == 1 and Kqueue[1] == 1:
+            if car_y_pos > 0:
+                grid[car_y_pos, car_x_pos] = EMPTY_SYMBOL
+                car_y_pos -= 1
+                grid[car_y_pos, car_x_pos] += CAR_SYMBOL
+        elif Kqueue[0] == 2 and Kqueue[1] == 2:
+            if car_y_pos < ROWS - 1:
+                grid[car_y_pos, car_x_pos] = EMPTY_SYMBOL
+                car_y_pos += 1
+                grid[car_y_pos, car_x_pos] += CAR_SYMBOL
+
+        if grid[car_y_pos, car_x_pos] >= 3:
+            for user in users:
+                user[1].setblocking(False)
+                user[1].sendall(b"LOSE")
+            os._exit(0)
+
+        
 
         user: dict
         for user in users:
-            user[1].setblocking(False)
-            user[1].sendall(json.dumps(grid, cls=NumpyEncoder.NumpyEncoder).encode("utf-8"))
+            user[1].sendall((json.dumps(grid, cls=NumpyEncoder.NumpyEncoder) + "\n").encode("utf-8"))
 
-        time.sleep(1)
+        time.sleep(0.5)
 
 
 def accept(sock: sock.SocketType, mask, queue: mp.Queue, keyQueue: mp.Queue):
@@ -66,7 +84,7 @@ def accept(sock: sock.SocketType, mask, queue: mp.Queue, keyQueue: mp.Queue):
 
 def read(conn: sock.SocketType, mask, queue: mp.Queue, keyQueue: mp.Queue):
     current_user_input = [0, 0]
-    data = conn.recv(1024)
+    data = conn.recv(4096)
     if data:
         logger.info('[SERVER] Received %s from %s', repr(data), conn)
 
@@ -110,6 +128,8 @@ def Server(sock: sock.SocketType):
     q = mp.Queue()
 
     keyQueue = mp.Queue()
+    
+    
 
     while True:
         events = sel.select()

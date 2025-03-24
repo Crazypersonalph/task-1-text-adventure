@@ -30,7 +30,7 @@ def CheckKeys(sock: sock.SocketType):
                     if character == b"\xe0" or character == b"\x00":
                         character = msvcrt.getch()
                         print(character)
-                        
+
                         if character == b"H":
                             sock.sendall(b"UP")
                         elif character == b"P":
@@ -49,17 +49,19 @@ def ConnectToServer(ip: str, port: int, name: str):
 
 
 def GameLoop(sock: sock.SocketType):
-    try:
-        while True:
-            data = sock.recv(1024)
-            if data:
-                print(np.asarray(json.loads(data.decode("utf-8")), dtype=int))
-            else:
-                raise
-    except:
-        sock.close()
-        os._exit(0)
-        return
+    while True:
+        data = sock.recv(4096)
+        if data:
+            print(data)
+            if b"LOSE" in data:
+                print("You lost!")
+                sock.close()
+                os._exit(0)
+                break
+            for line in data.decode('utf-8').splitlines():
+                print(np.asarray(json.loads(line), dtype=int))
+        else:
+            break
 
     
 
