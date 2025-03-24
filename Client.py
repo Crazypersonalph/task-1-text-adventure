@@ -7,6 +7,8 @@ import os
 
 import json
 
+import msvcrt
+
 ROWS, COLS = 3, 10
 CAR_SYMBOL, OBSTACLE_SYMBOL, EMPTY_SYMBOL = 1, 2, 0
 
@@ -20,8 +22,22 @@ logging.basicConfig(filename='client.log', encoding='utf-8', level=logging.DEBUG
 
 current_log = []
 
+def CheckKeys(sock: sock.SocketType):
+    mp.Process(target=GameLoop, args=(sock,)).start()
+    while True:
+        if msvcrt.kbhit():
+                    character = msvcrt.getch()
+                    if character == b"\xe0" or character == b"\x00":
+                        character = msvcrt.getch()
+                        print(character)
+                        
+                        if character == b"H":
+                            sock.sendall(b"UP")
+                        elif character == b"P":
+                            sock.sendall(b"DOWN")
 
-def ConnectToServer(ip, port, name):
+
+def ConnectToServer(ip: str, port: int, name: str):
     clientsocket = sock.socket(sock.AF_INET, sock.SOCK_STREAM)
     clientsocket.connect((ip, port))
 
@@ -29,8 +45,7 @@ def ConnectToServer(ip, port, name):
 
     clientsocket.sendall(bytes(intial_packet, "utf-8"))
 
-
-    GameLoop(clientsocket)
+    return clientsocket
 
 
 def GameLoop(sock: sock.SocketType):
@@ -45,6 +60,7 @@ def GameLoop(sock: sock.SocketType):
         sock.close()
         os._exit(0)
         return
+
     
 
 
@@ -56,20 +72,21 @@ if __name__ == "__main__":
         
         name = input("What is your name? ")
         
-        connection_selection = input("Would you like to connect to a server, or create a new one? (Connect/New Server)")
+        connection_selection = input("Would you like to connect to a server, or create a new one? (Connect/New Server): ")
 
         if connection_selection == "Connect":
             conn_det = input("Please specify the IP address and port, separated by a comma: ").split(",")
 
-            client_process = mp.Process(target=ConnectToServer, args=(conn_det[0], int(conn_det[1]), name))
-            client_process.start()
+            socket: sock.SocketType = ConnectToServer(conn_det[0], int(conn_det[1]), name)
+            CheckKeys(socket)
 
         elif connection_selection == "New Server":
             server_process = mp.Process(target=Server.CreateNewServer, args=(6089,))
             server_process.start()
 
-            client_process = mp.Process(target=ConnectToServer, args=("localhost", 6089, name))
-            client_process.start()
+            socket: sock.SocketType = ConnectToServer("localhost", 6089, name)
+            CheckKeys(socket)
+
         else:
             print("Invalid input. Please try again.")
             main()

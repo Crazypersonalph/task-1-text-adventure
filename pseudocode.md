@@ -2,7 +2,6 @@
 IMPORT sockets FROM Python
 
 GLOBAL current_log = []
-EXTERN grid_display, existing_grid_display, car_pos, obstacle_pos DUE TO complex algorithm
 
 FUNCTION MainGame(sock: PySocket)
     WHILE TRUE

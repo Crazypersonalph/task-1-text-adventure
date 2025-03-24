@@ -14,3 +14,14 @@ Excerpt of logging:
 
 ### Fix
 After a bit of thinking and reading the Python sockets documentation, I realised that for the connection to be maintained, the client must run a `while True:` loop to keep listening for data. If it stops listening for data, then the connection is prematurely closed.
+
+# Error 2
+This bug is a logic error, rather than a problem with the code. Upon both clients connecting, the server does not start the game, but rather, hangs. Client 2 in particular doesn't receive the first sent info array from the server. Something is wrong with the sleep function in the server gameloop.
+
+According to the logging data, both clients are connecting, and have sucessfully sent their names through to the server.
+
+I fixed this by making the server game loop asynchronous, however this caused a new problem by making it so that the server doesn't send messages every 500ms anymore. It doesn't send any more messages.
+
+I fixed all these issues by implementing a queue system (much like the current_log in my pseudocode) that gives the server main loop a list of all the users connected, instead of the list being empty when the process forked.
+
+I also moved the generation of the initial game frame to main game loop. Now the game runs smoothly.
