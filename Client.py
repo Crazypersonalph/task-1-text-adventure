@@ -11,6 +11,8 @@ import msvcrt
 
 import sys
 
+import winsound
+
 ROWS, COLS = 5, 20
 CAR_SYMBOL, OBSTACLE_SYMBOL, EMPTY_SYMBOL = 1, 2, 0
 
@@ -54,6 +56,7 @@ def ConnectToServer(ip: str, port: int, name: str):
 
 
 def GameLoop(sock: sock.SocketType):
+    winsound.PlaySound("assets/game.wav", winsound.SND_FILENAME + winsound.SND_ASYNC + winsound.SND_LOOP)
     for i in range(0, ROWS+6):
         print()
 
@@ -63,6 +66,7 @@ def GameLoop(sock: sock.SocketType):
             if b"LOSE" in data:
                 print("You lost!")
                 sock.close()
+                winsound.PlaySound(None, winsound.SND_PURGE)
                 os._exit(0)
                 break
             for line in data.decode('utf-8').splitlines():
@@ -90,8 +94,38 @@ def GameLoop(sock: sock.SocketType):
 
 if __name__ == "__main__":
     def main():
-        print("Welcome to Alphons's Car Racing Game!")
-        print("The aim of the game is to work with another player to control a car in order to dodge obstacles.\n You must use your arrow keys to change the lane in which your car is in, and have the same input as the other player.\n You lose when you crash into an obstacle.")
+        winsound.PlaySound("assets/intro.wav", winsound.SND_FILENAME + winsound.SND_ASYNC + winsound.SND_LOOP)
+        print("Welcome to",
+              "\033[36m" "A"
+              "\033[30m" "l"
+              "\033[31m" "p"
+              "\033[32m" "h"
+              "\033[33m" "o"
+              "\033[34m" "n"
+              "\033[35m" "s"
+              "\033[36m" "'s",
+              "\033[31m" "Car Racing Game!" "\033[0m")
+        
+        print("\033[31m"
+r'''
+                      ___..............._
+             __.. ' _'.""""""\\""""""""- .`-._
+ ______.-'         (_) |      \\           ` \\`-. _
+/_       --------------'-------\\---....______\\__`.`  -..___
+| T      _.----._           Xxx|x...           |          _.._`--. _
+| |    .' ..--.. `.         XXX|XXXXXXXXXxx==  |       .'.---..`.     -._
+\_j   /  /  __  \  \        XXX|XXXXXXXXXXX==  |      / /  __  \ \        `-.
+ _|  |  |  /  \  |  |       XXX|""'            |     / |  /  \  | |          |
+|__\_j  |  \__/  |  L__________|_______________|_____j |  \__/  | L__________J
+     `'\ \      / ./__________________________________\ \      / /___________\\
+        `.`----'.'                                     `.`----'.'
+          `""""'                                         `""""'
+'''
+"\033[0m")
+        
+        print("The aim of the game is to work with another player to control a car in order to dodge obstacles.\n"
+        "You must use your arrow keys to change the lane in which your car is in, and have the same input as the other player.\n"
+        "You lose when you crash into an obstacle.")
         
         name = input("What is your name? ")
         
@@ -100,6 +134,7 @@ if __name__ == "__main__":
         if connection_selection == "connect":
             conn_det = input("Please specify the IP address and port, separated by a comma: ").split(",")
 
+            winsound.PlaySound(None, winsound.SND_PURGE)
             socket: sock.SocketType = ConnectToServer(conn_det[0], int(conn_det[1]), name)
             CheckKeys(socket)
 
@@ -107,6 +142,7 @@ if __name__ == "__main__":
             server_process = mp.Process(target=Server.CreateNewServer, args=(6089,))
             server_process.start()
 
+            winsound.PlaySound(None, winsound.SND_PURGE)
             socket: sock.SocketType = ConnectToServer("localhost", 6089, name)
             CheckKeys(socket)
 

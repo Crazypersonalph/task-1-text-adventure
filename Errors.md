@@ -37,3 +37,10 @@ There are two main ways to solve such an error.
 2. Separating each message with a delimiter.
 
 I went with the second option, as it is a quick and dirty fix, that works fine for my purposes.
+
+# Error 4
+This was another logic error. It was found through running the game and observing output. In this error, the output of the road was not being drawn properly, instead, with overlapping emojis and lines cut off two characters in.
+
+After fiddling with different methods of printing and ANSI escape codes, I realised that it was due to how my carriage return signals in the terminal were sending the cursor back to the start of the previous line, instead of the same y-position of the cursor on the previous line, when I was trying to get the borders of the road drawn in.
+
+I fixed this by solidfying my lane markers as their own print statements before and after the lines are generated and drawn, and in the process, making the lane marker generation responsive to changes in the column and row variables.
