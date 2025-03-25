@@ -9,8 +9,16 @@ import json
 
 import msvcrt
 
-ROWS, COLS = 3, 10
+import sys
+
+ROWS, COLS = 5, 20
 CAR_SYMBOL, OBSTACLE_SYMBOL, EMPTY_SYMBOL = 1, 2, 0
+
+elements = [
+    "  ",
+    "🚗",
+    "🧱",
+]
 
 grid = np.full((ROWS, COLS), EMPTY_SYMBOL, dtype=int)
 
@@ -46,6 +54,9 @@ def ConnectToServer(ip: str, port: int, name: str):
 
 
 def GameLoop(sock: sock.SocketType):
+    for i in range(0, ROWS+6):
+        print()
+
     while True:
         data = sock.recv(4096)
         if data:
@@ -55,7 +66,21 @@ def GameLoop(sock: sock.SocketType):
                 os._exit(0)
                 break
             for line in data.decode('utf-8').splitlines():
-                print(np.asarray(json.loads(line), dtype=int))
+                game_grid = (np.asarray(json.loads(line), dtype=int))
+                for i in range(0, ROWS+6):
+                    sys.stdout.write("\x1b[F")
+                for row in game_grid:
+                    for i in range(0, COLS):
+                        print("--", end="")
+                    print()
+
+                    for i in row:
+                        print(elements[i], end="")
+                    print()
+
+                for i in range(0, COLS):
+                    print("--", end="")
+                print()
         else:
             break
 
