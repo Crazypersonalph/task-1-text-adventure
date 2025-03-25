@@ -101,23 +101,23 @@ def read(conn: sock.SocketType, mask, queue: mp.Queue, keyQueue: mp.Queue):
 
         if data.decode("utf-8") == "UP":
             if conn == users[0][1]:
+                current_user_input[0] = 1
                 #current_user_input[0] = 1
-                current_user_input[0] = 1
-                current_user_input[1] = 1
-            elif conn == users[1][1]:
                 #current_user_input[1] = 1
-                current_user_input[0] = 1
+            elif conn == users[1][1]:
                 current_user_input[1] = 1
+                #current_user_input[0] = 1
+                #current_user_input[1] = 1
             keyQueue.put_nowait(current_user_input)
         elif data.decode("utf-8") == "DOWN":
             if conn == users[0][1]:
+                current_user_input[0] = 2
                 #current_user_input[0] = 2
-                current_user_input[0] = 2
-                current_user_input[1] = 2
-            elif conn == users[1][1]:
                 #current_user_input[1] = 2
-                current_user_input[0] = 2
+            elif conn == users[1][1]:
                 current_user_input[1] = 2
+                #current_user_input[0] = 2
+                #current_user_input[1] = 2
             keyQueue.put_nowait(current_user_input)
         else:
             current_user_input = [0, 0]
