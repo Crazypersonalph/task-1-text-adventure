@@ -20,8 +20,6 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(filename='client.log', encoding='utf-8', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 
-current_log = []
-
 def CheckKeys(sock: sock.SocketType):
     mp.Process(target=GameLoop, args=(sock,)).start()
     while True:
@@ -29,7 +27,6 @@ def CheckKeys(sock: sock.SocketType):
                     character = msvcrt.getch()
                     if character == b"\xe0" or character == b"\x00":
                         character = msvcrt.getch()
-                        print(character)
 
                         if character == b"H":
                             sock.sendall(b"UP")
@@ -52,7 +49,6 @@ def GameLoop(sock: sock.SocketType):
     while True:
         data = sock.recv(4096)
         if data:
-            print(data)
             if b"LOSE" in data:
                 print("You lost!")
                 sock.close()
@@ -74,7 +70,7 @@ if __name__ == "__main__":
         
         name = input("What is your name? ")
         
-        connection_selection = input("Would you like to connect to a server, or create a new one? (Connect/New Server): ")
+        connection_selection = input("Would you like to connect to a server, or create a new one? (Connect/New Server): ").lower()
 
         if connection_selection == "Connect":
             conn_det = input("Please specify the IP address and port, separated by a comma: ").split(",")
