@@ -72,13 +72,13 @@ if __name__ == "__main__":
         
         connection_selection = input("Would you like to connect to a server, or create a new one? (Connect/New Server): ").lower()
 
-        if connection_selection == "Connect":
+        if connection_selection == "connect":
             conn_det = input("Please specify the IP address and port, separated by a comma: ").split(",")
 
             socket: sock.SocketType = ConnectToServer(conn_det[0], int(conn_det[1]), name)
             CheckKeys(socket)
 
-        elif connection_selection == "New Server":
+        elif connection_selection == "new server":
             server_process = mp.Process(target=Server.CreateNewServer, args=(6089,))
             server_process.start()
 

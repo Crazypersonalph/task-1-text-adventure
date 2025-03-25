@@ -82,7 +82,7 @@ def accept(sock: sock.SocketType, mask, queue: mp.Queue, keyQueue: mp.Queue):
     sel.register(conn, selectors.EVENT_READ, read)
 
 def read(conn: sock.SocketType, mask, queue: mp.Queue, keyQueue: mp.Queue):
-    current_user_input = [0, 0]
+    global current_user_input
     data = conn.recv(4096)
     if data:
         logger.info('[SERVER] Received %s from %s', repr(data), conn)
