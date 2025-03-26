@@ -31,8 +31,6 @@ def start_game(queue: mp.Queue, keyQueue: mp.Queue, kill_queue: mp.Queue):
     car_x_pos = 0
     car_y_pos = 1
 
-    score = 0
-
     grid[car_y_pos, car_x_pos] = CAR_SYMBOL
     
     users = queue.get()
@@ -67,12 +65,9 @@ def start_game(queue: mp.Queue, keyQueue: mp.Queue, kill_queue: mp.Queue):
         if grid[car_y_pos, car_x_pos] >= 3:
             for user in users:
                 user[1].setblocking(False)
-                user[1].sendall(f"SCORE{str(score)}".encode("utf-8"))
                 user[1].sendall(b"LOSE")
                 kill_queue.put_nowait(True)
             os._exit(0)
-
-        score += 1
 
         
 

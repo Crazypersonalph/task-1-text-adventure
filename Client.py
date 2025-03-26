@@ -69,33 +69,28 @@ def GameLoop(sock: sock.SocketType, kill_queue: mp.Queue):
     while True:
         data = sock.recv(4096)
         if data:
-            if b"SCORE" in data:
-                print(f"Your score is {data.decode('utf-8').replace('SCORE','')}")
             if b"LOSE" in data:
                 print("You lost!")
                 kill_queue.put_nowait(True)
                 sock.close()
                 winsound.PlaySound(None, winsound.SND_PURGE)
                 break
-            try:
-                for line in data.decode('utf-8').splitlines():
-                    game_grid = (np.asarray(json.loads(line), dtype=int))
-                    for i in range(0, ROWS+6):
-                        sys.stdout.write("\x1b[F")
-                    for row in game_grid:
-                        for i in range(0, COLS):
-                            print("--", end="")
-                        print()
-
-                        for i in row:
-                            print(elements[i], end="")
-                        print()
-
+            for line in data.decode('utf-8').splitlines():
+                game_grid = (np.asarray(json.loads(line), dtype=int))
+                for i in range(0, ROWS+6):
+                    sys.stdout.write("\x1b[F")
+                for row in game_grid:
                     for i in range(0, COLS):
                         print("--", end="")
                     print()
-            except:
-                pass
+
+                    for i in row:
+                        print(elements[i], end="")
+                    print()
+
+                for i in range(0, COLS):
+                    print("--", end="")
+                print()
         else:
             break
 
