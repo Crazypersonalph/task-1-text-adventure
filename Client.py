@@ -30,9 +30,12 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(filename='client.log', encoding='utf-8', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 
-def CheckKeys(sock: sock.SocketType):
-    mp.Process(target=GameLoop, args=(sock,)).start()
+def CheckKeys(sock: sock.SocketType, kill_queue: mp.Queue):
+    mp.Process(target=GameLoop, args=(sock,kill_queue)).start()
     while True:
+        if kill_queue.qsize() > 0:
+            return
+
         if msvcrt.kbhit():
                     character = msvcrt.getch()
                     if character == b"\xe0" or character == b"\x00":
@@ -55,7 +58,10 @@ def ConnectToServer(ip: str, port: int, name: str):
     return clientsocket
 
 
-def GameLoop(sock: sock.SocketType):
+def GameLoop(sock: sock.SocketType, kill_queue: mp.Queue):
+    if kill_queue.qsize() > 0:
+        os._exit(0)
+        return
     winsound.PlaySound("assets/game.wav", winsound.SND_FILENAME + winsound.SND_ASYNC + winsound.SND_LOOP)
     for i in range(0, ROWS+6):
         print()
@@ -65,9 +71,9 @@ def GameLoop(sock: sock.SocketType):
         if data:
             if b"LOSE" in data:
                 print("You lost!")
+                kill_queue.put_nowait(True)
                 sock.close()
                 winsound.PlaySound(None, winsound.SND_PURGE)
-                os._exit(0)
                 break
             for line in data.decode('utf-8').splitlines():
                 game_grid = (np.asarray(json.loads(line), dtype=int))
@@ -94,6 +100,7 @@ def GameLoop(sock: sock.SocketType):
 
 if __name__ == "__main__":
     def main():
+        kill_queue = mp.Queue()
         winsound.PlaySound("assets/intro.wav", winsound.SND_FILENAME + winsound.SND_ASYNC + winsound.SND_LOOP)
         print("Welcome to",
               "\033[36m" "A"
@@ -136,17 +143,21 @@ r'''
 
             winsound.PlaySound(None, winsound.SND_PURGE)
             socket: sock.SocketType = ConnectToServer(conn_det[0], int(conn_det[1]), name)
-            CheckKeys(socket)
+            CheckKeys(socket, kill_queue)
 
         elif connection_selection == "new server":
-            server_process = mp.Process(target=Server.CreateNewServer, args=(6089,))
+            server_process = mp.Process(target=Server.CreateNewServer, args=(6089,kill_queue))
             server_process.start()
 
             winsound.PlaySound(None, winsound.SND_PURGE)
             socket: sock.SocketType = ConnectToServer("localhost", 6089, name)
-            CheckKeys(socket)
+            CheckKeys(socket, kill_queue)
 
         else:
             print("Invalid input. Please try again.")
             main()
+
+        return
     main()
+
+    os.system("pause")
