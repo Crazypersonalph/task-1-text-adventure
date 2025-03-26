@@ -26,7 +26,7 @@ logging.basicConfig(filename='server.log', encoding='utf-8', level=logging.DEBUG
 
 sel = selectors.DefaultSelector()
 
-def start_game(queue: mp.Queue, keyQueue: mp.Queue, kill_queue: mp.Queue):
+def start_game(queue: mp.Queue, keyQueue: mp.Queue):
     grid = np.full((ROWS, COLS), EMPTY_SYMBOL, dtype=int)
     car_x_pos = 0
     car_y_pos = 1
@@ -38,10 +38,6 @@ def start_game(queue: mp.Queue, keyQueue: mp.Queue, kill_queue: mp.Queue):
     users = queue.get()
 
     while True:
-
-        if kill_queue.qsize() > 0:
-            os._exit(0)
-            break
 
         grid[:, :-1] = grid[:, 1:]
         grid[random.randint(0,ROWS-1), -1] = random.choice([0,0,0,2])
@@ -69,7 +65,6 @@ def start_game(queue: mp.Queue, keyQueue: mp.Queue, kill_queue: mp.Queue):
                 user[1].setblocking(False)
                 user[1].sendall(f"SCORE{str(score)}".encode("utf-8"))
                 user[1].sendall(b"LOSE")
-                kill_queue.put_nowait(True)
             os._exit(0)
 
         score += 1
@@ -112,14 +107,22 @@ def read(conn: sock.SocketType, mask, queue: mp.Queue, keyQueue: mp.Queue):
         if data.decode("utf-8") == "UP":
             if conn == users[0][1]:
                 current_user_input[0] = 1
+                #current_user_input[0] = 1
+                #current_user_input[1] = 1
             elif conn == users[1][1]:
                 current_user_input[1] = 1
+                #current_user_input[0] = 1
+                #current_user_input[1] = 1
             keyQueue.put_nowait(current_user_input)
         elif data.decode("utf-8") == "DOWN":
             if conn == users[0][1]:
                 current_user_input[0] = 2
+                #current_user_input[0] = 2
+                #current_user_input[1] = 2
             elif conn == users[1][1]:
                 current_user_input[1] = 2
+                #current_user_input[0] = 2
+                #current_user_input[1] = 2
             keyQueue.put_nowait(current_user_input)
         else:
             current_user_input = [0, 0]
@@ -132,7 +135,7 @@ def read(conn: sock.SocketType, mask, queue: mp.Queue, keyQueue: mp.Queue):
         conn.close()
 
 
-def Server(sock: sock.SocketType, kill_queue: mp.Queue):
+def Server(sock: sock.SocketType):
     sel.register(sock, selectors.EVENT_READ, accept)
     q = mp.Queue()
 
@@ -150,13 +153,10 @@ def Server(sock: sock.SocketType, kill_queue: mp.Queue):
         if users.__len__() == 2 and executed == False:
             q.put_nowait(users)
             executed = True
-            mp.Process(target=start_game, args=(q, keyQueue, kill_queue)).start()
-
-        if kill_queue.qsize() > 0:
-            os._exit(0)
+            mp.Process(target=start_game, args=(q, keyQueue, )).start()
 
 
-def CreateNewServer(port, kill_queue: mp.Queue):
+def CreateNewServer(port):
     serversocket = sock.socket(sock.AF_INET, sock.SOCK_STREAM)
     serversocket.setsockopt(sock.SOL_SOCKET, sock.SO_REUSEADDR, 1)
     serversocket.setblocking(False)
@@ -165,5 +165,5 @@ def CreateNewServer(port, kill_queue: mp.Queue):
 
     logger.info("Server created on port %s.", str(port))
 
-    server_process = mp.Process(target=Server, args=(serversocket, kill_queue))
+    server_process = mp.Process(target=Server, args=(serversocket,))
     server_process.start()
