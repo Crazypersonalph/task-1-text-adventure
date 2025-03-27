@@ -36,9 +36,11 @@ def CheckKeys(sock: sock.SocketType, kill_queue: mp.Queue):
     mp.Process(target=GameLoop, args=(sock,kill_queue)).start()
     global game_ended
     while True:
-        if kill_queue.qsize() > 0:
-            game_ended = True
-            return
+        if kill_queue.empty() == False:
+            kill = kill_queue.get_nowait()
+            if kill == True:
+                game_ended = True
+                return
 
         if msvcrt.kbhit():
                     character = msvcrt.getch()
@@ -64,10 +66,10 @@ def ConnectToServer(ip: str, port: int, name: str):
 
 def GameLoop(sock: sock.SocketType, kill_queue: mp.Queue):
     global game_ended
-    if kill_queue.qsize() > 0:
-        game_ended = True
-        os._exit(0)
-        return
+    if kill_queue.empty() == False:
+            kill = kill_queue.get_nowait()
+            if kill == True:
+                return
     winsound.PlaySound("assets/game.wav", winsound.SND_FILENAME + winsound.SND_ASYNC + winsound.SND_LOOP)
     for i in range(0, ROWS+6):
         print()
@@ -79,6 +81,7 @@ def GameLoop(sock: sock.SocketType, kill_queue: mp.Queue):
             if b"LOSE" in data:
                 print(f"You lost! Your score was {data.decode('utf-8')[5:]}")
                 kill_queue.put_nowait(True)
+                game_ended = True
                 sock.close()
                 winsound.PlaySound(None, winsound.SND_PURGE)
                 break

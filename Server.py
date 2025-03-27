@@ -39,9 +39,10 @@ def start_game(queue: mp.Queue, keyQueue: mp.Queue, kill_queue: mp.Queue):
 
     while True:
 
-        if kill_queue.qsize() > 0:
-            os._exit(0)
-            break
+        if kill_queue.empty() == False:
+            kill = kill_queue.get_nowait()
+            if kill == True:
+                return
 
         grid[:, :-1] = grid[:, 1:]
         grid[random.randint(0,ROWS-1), -1] = random.choice([0,0,0,2])
@@ -76,6 +77,8 @@ def start_game(queue: mp.Queue, keyQueue: mp.Queue, kill_queue: mp.Queue):
         user: dict
         for user in users:
             user[1].sendall((json.dumps(grid, cls=NumpyEncoder.NumpyEncoder) + "\n").encode("utf-8"))
+        
+        logger.info("Loop of start_game completed")
 
         time.sleep(0.5)
 
@@ -149,8 +152,10 @@ def Server(sock: sock.SocketType, kill_queue: mp.Queue):
             executed = True
             mp.Process(target=start_game, args=(q, keyQueue, kill_queue)).start()
 
-        if kill_queue.qsize() > 0:
-            os._exit(0)
+        if kill_queue.empty() == False:
+            kill = kill_queue.get_nowait()
+            if kill == True:
+                return
 
 
 def CreateNewServer(port, kill_queue: mp.Queue):

@@ -44,3 +44,6 @@ This was another logic error. It was found through running the game and observin
 After fiddling with different methods of printing and ANSI escape codes, I realised that it was due to how my carriage return signals in the terminal were sending the cursor back to the start of the previous line, instead of the same y-position of the cursor on the previous line, when I was trying to get the borders of the road drawn in.
 
 I fixed this by solidfying my lane markers as their own print statements before and after the lines are generated and drawn, and in the process, making the lane marker generation responsive to changes in the column and row variables.
+
+# Error 5
+This was another logic error. The game was freezing in the middle of playtime due to no reason, and in the server logs, the server was receiving key inputs, but wasn't sending new game frames to the clients.
