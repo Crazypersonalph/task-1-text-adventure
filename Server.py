@@ -21,7 +21,7 @@ users = []
 current_user_input = [0, 0]
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("server")
 logging.basicConfig(filename='server.log', encoding='utf-8', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 sel = selectors.DefaultSelector()
@@ -34,6 +34,8 @@ def start_game(queue: mp.Queue, keyQueue: mp.Queue, kill_queue: mp.Queue):
     grid[car_y_pos, car_x_pos] = CAR_SYMBOL
     
     users = queue.get()
+
+    score = 0
 
     while True:
 
@@ -65,11 +67,11 @@ def start_game(queue: mp.Queue, keyQueue: mp.Queue, kill_queue: mp.Queue):
         if grid[car_y_pos, car_x_pos] >= 3:
             for user in users:
                 user[1].setblocking(False)
-                user[1].sendall(b"LOSE")
+                user[1].sendall(b"LOSE " + bytes(str(score), "utf-8"))
                 kill_queue.put_nowait(True)
             os._exit(0)
 
-        
+        score += 1
 
         user: dict
         for user in users:

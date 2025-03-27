@@ -16,6 +16,8 @@ import winsound
 ROWS, COLS = 5, 20
 CAR_SYMBOL, OBSTACLE_SYMBOL, EMPTY_SYMBOL = 1, 2, 0
 
+game_ended = False
+
 elements = [
     "  ",
     "🚗",
@@ -26,14 +28,16 @@ grid = np.full((ROWS, COLS), EMPTY_SYMBOL, dtype=int)
 
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("client")
 logging.basicConfig(filename='client.log', encoding='utf-8', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 
 def CheckKeys(sock: sock.SocketType, kill_queue: mp.Queue):
     mp.Process(target=GameLoop, args=(sock,kill_queue)).start()
+    global game_ended
     while True:
         if kill_queue.qsize() > 0:
+            game_ended = True
             return
 
         if msvcrt.kbhit():
@@ -59,7 +63,9 @@ def ConnectToServer(ip: str, port: int, name: str):
 
 
 def GameLoop(sock: sock.SocketType, kill_queue: mp.Queue):
+    global game_ended
     if kill_queue.qsize() > 0:
+        game_ended = True
         os._exit(0)
         return
     winsound.PlaySound("assets/game.wav", winsound.SND_FILENAME + winsound.SND_ASYNC + winsound.SND_LOOP)
@@ -69,8 +75,9 @@ def GameLoop(sock: sock.SocketType, kill_queue: mp.Queue):
     while True:
         data = sock.recv(4096)
         if data:
+            logger.info(f"[CLIENT] Received data: {data}")
             if b"LOSE" in data:
-                print("You lost!")
+                print(f"You lost! Your score was {data.decode('utf-8')[5:]}")
                 kill_queue.put_nowait(True)
                 sock.close()
                 winsound.PlaySound(None, winsound.SND_PURGE)
@@ -160,4 +167,6 @@ r'''
         return
     main()
 
-    os.system("pause")
+    if game_ended:
+        print()
+        os.system("pause")
