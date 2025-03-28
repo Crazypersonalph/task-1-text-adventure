@@ -80,7 +80,7 @@ def start_game(queue: mp.Queue, keyQueue: mp.Queue, kill_queue: mp.Queue):
         
         logger.info("Loop of start_game completed")
 
-        time.sleep(0.5)
+        time.sleep(0.25)
 
 
 def accept(sock: sock.SocketType, mask, queue: mp.Queue, keyQueue: mp.Queue):
