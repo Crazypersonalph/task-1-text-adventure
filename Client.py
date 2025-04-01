@@ -13,7 +13,7 @@ import sys
 
 import winsound
 
-ROWS, COLS = 5, 20
+ROWS, COLS = 6, 20
 CAR_SYMBOL, OBSTACLE_SYMBOL, EMPTY_SYMBOL = 1, 2, 0
 
 game_ended = False
@@ -71,7 +71,7 @@ def GameLoop(sock: sock.SocketType, kill_queue: mp.Queue, name: str):
             if kill == True:
                 return
     winsound.PlaySound("assets/game.wav", winsound.SND_FILENAME + winsound.SND_ASYNC + winsound.SND_LOOP)
-    for i in range(0, ROWS+6):
+    for i in range(0, ROWS*2+1):
         print()
 
     while True:
@@ -87,7 +87,7 @@ def GameLoop(sock: sock.SocketType, kill_queue: mp.Queue, name: str):
                 break
             for line in data.decode('utf-8').splitlines():
                 game_grid = (np.asarray(json.loads(line), dtype=int))
-                for i in range(0, ROWS+6):
+                for i in range(0, ROWS*2+1):
                     sys.stdout.write("\x1b[F")
                 for row in game_grid:
                     for i in range(0, COLS):

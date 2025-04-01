@@ -11,7 +11,7 @@ import random
 
 import classes.NumpyEncoder as NumpyEncoder
 
-ROWS, COLS = 5, 20
+ROWS, COLS = 6, 20
 CAR_SYMBOL, OBSTACLE_SYMBOL, EMPTY_SYMBOL = 1, 2, 0
 
 executed = False
