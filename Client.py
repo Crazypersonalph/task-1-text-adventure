@@ -32,8 +32,8 @@ logger = logging.getLogger("client")
 logging.basicConfig(filename='client.log', encoding='utf-8', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 
-def CheckKeys(sock: sock.SocketType, kill_queue: mp.Queue):
-    mp.Process(target=GameLoop, args=(sock,kill_queue)).start()
+def CheckKeys(sock: sock.SocketType, kill_queue: mp.Queue, name: str):
+    mp.Process(target=GameLoop, args=(sock,kill_queue, name)).start()
     global game_ended
     while True:
         if kill_queue.empty() == False:
@@ -64,7 +64,7 @@ def ConnectToServer(ip: str, port: int, name: str):
     return clientsocket
 
 
-def GameLoop(sock: sock.SocketType, kill_queue: mp.Queue):
+def GameLoop(sock: sock.SocketType, kill_queue: mp.Queue, name: str):
     global game_ended
     if kill_queue.empty() == False:
             kill = kill_queue.get_nowait()
@@ -79,7 +79,7 @@ def GameLoop(sock: sock.SocketType, kill_queue: mp.Queue):
         if data:
             logger.info(f"[CLIENT] Received data: {data}")
             if b"LOSE" in data:
-                print(f"You lost! Your score was {data.decode('utf-8')[5:]}")
+                print(f"You lost, {name}! Your score was {data.decode('utf-8')[5:]}")
                 kill_queue.put_nowait(True)
                 game_ended = True
                 sock.close()
@@ -142,7 +142,9 @@ r'''
         
         print("The aim of the game is to work with another player to control a car in order to dodge obstacles.\n"
         "You must use your arrow keys to change the lane in which your car is in, and have the same input as the other player.\n"
-        "You lose when you crash into an obstacle.")
+        "You lose when you crash into an obstacle.\n"
+        "Remember, if you press the Up arrow key, and the other player presses something else, the car will not move.\n"
+        "However, if you two press the same button at the same time, then the car will move.")
         
         name = input("What is your name? ")
         
@@ -152,16 +154,19 @@ r'''
             conn_det = input("Please specify the IP address and port, separated by a comma: ").split(",")
 
             winsound.PlaySound(None, winsound.SND_PURGE)
+            print(f"Good luck, {name}!")
+
             socket: sock.SocketType = ConnectToServer(conn_det[0], int(conn_det[1]), name)
-            CheckKeys(socket, kill_queue)
+            CheckKeys(socket, kill_queue, name)
 
         elif connection_selection == "new server":
+            print(f"Good luck, {name}!")
             server_process = mp.Process(target=Server.CreateNewServer, args=(6089,kill_queue))
             server_process.start()
 
             winsound.PlaySound(None, winsound.SND_PURGE)
             socket: sock.SocketType = ConnectToServer("localhost", 6089, name)
-            CheckKeys(socket, kill_queue)
+            CheckKeys(socket, kill_queue, name)
 
         else:
             print("Invalid input. Please try again.")
