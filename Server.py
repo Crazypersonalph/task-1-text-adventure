@@ -78,7 +78,6 @@ def start_game(queue: mp.Queue, keyQueue: mp.Queue, kill_queue: mp.Queue):
         for user in users:
             user[1].sendall((json.dumps(grid, cls=NumpyEncoder.NumpyEncoder) + "\n").encode("utf-8"))
         
-        logger.info("Loop of start_game completed")
 
         time.sleep(0.3)
 
