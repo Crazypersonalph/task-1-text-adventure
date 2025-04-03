@@ -3,6 +3,10 @@ In this game, you, along with another player, are tasked with navigating a car t
 
 You have to get as far as possible, and have to avoid colliding with obstacles.
 
+#### Before running the game, make sure to have NumPy installed, for Python mathematics support.
+
+You can install it with `pip install numpy` or `python -m pip install numpy`
+
 ### Instructions for servers
 In order to get the most enjoyability out of the game, you must allow Python through your Windows firewall for other computers to access the game.
 
