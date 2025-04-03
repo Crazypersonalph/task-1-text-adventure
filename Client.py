@@ -20,9 +20,12 @@ game_ended = False
 
 conn_det = []
 
+car_select_array = ['🚃','🚋','🚓', '🚔', '🚗', '🚘', '🚙', '🏎️', '🚡', '🚞', '🚲', '🏍️', '🛵', '⛴️', '🚢']
+
+
 elements = [
     "  ",
-    "🚗",
+    car_select_array[1],
     "🧱",
 ]
 
@@ -35,7 +38,7 @@ logging.basicConfig(filename='client.log', encoding='utf-8', level=logging.DEBUG
 
 
 def CheckKeys(sock: sock.SocketType, kill_queue: mp.Queue, name: str):
-    mp.Process(target=GameLoop, args=(sock,kill_queue, name)).start()
+    mp.Process(target=GameLoop, args=(sock,kill_queue, name, elements)).start()
     global game_ended
     while True:
         if kill_queue.empty() == False:
@@ -70,7 +73,7 @@ def ConnectToServer(ip: str, port: int, name: str):
               pass
 
 
-def GameLoop(sock: sock.SocketType, kill_queue: mp.Queue, name: str):
+def GameLoop(sock: sock.SocketType, kill_queue: mp.Queue, name: str, elements: list):
     global game_ended
     if kill_queue.empty() == False:
             kill = kill_queue.get_nowait()
@@ -139,6 +142,7 @@ def connection_selection_func(kill_queue: mp.Queue, name: str, connection_select
 
 if __name__ == "__main__":
     def main(kill_q: mp.Queue = None, name_par: str = None, connect_selec = None, res = False):
+        global elements
         kill_queue = kill_q or mp.Queue()
         winsound.PlaySound("assets/intro.wav", winsound.SND_FILENAME + winsound.SND_ASYNC + winsound.SND_LOOP)
         print("Welcome to",
@@ -176,12 +180,44 @@ r'''
         "However, if you two press the same button at the same time, then the car will move.")
         
         name = name_par or input("What is your name? ")
+
+        current_car_selection = 0
+
+        print('\033[?25l', end="")
+
+        if not res:
+            print("What car would you like?")
+            print(f'<< {car_select_array[current_car_selection]} >>', end='\r')
+            while True:
+                if msvcrt.kbhit():
+                    character = msvcrt.getch()
+                    if character == b"\xe0" or character == b"\x00":
+                        character = msvcrt.getch()
+
+                        if character == b"M":
+                            try:
+                                current_car_selection = min(current_car_selection+1, car_select_array.__len__()-1)
+                            except:
+                                pass
+                        elif character == b"K":
+                            try:
+                                current_car_selection = max(current_car_selection-1, 0)
+                            except:
+                                pass
+
+                        print(f"<< {car_select_array[current_car_selection]} >>", end='\r')
+                    elif character == b'\r':
+                        break
+        print(f"<< {car_select_array[current_car_selection]} >>", end='\n')
+
+        elements[1] = car_select_array[current_car_selection]
+        print('\033[?25h', end="")
         
         connection_selection = connect_selec or input("Would you like to connect to a server, or create a new one? (Connect/New Server): ").lower()
 
         connection_selection_func(kill_queue, name, connection_selection, restart=res)
 
-        restart = input("Would you like to play another game with the same settings? (Y/N)")
+        restart = input("Would you like to play another game with the same settings? (Y/N) ")
 
         if restart.lower() == 'y':
             main(kill_queue, name, connection_selection, res=True)
