@@ -18,6 +18,8 @@ CAR_SYMBOL, OBSTACLE_SYMBOL, EMPTY_SYMBOL = 1, 2, 0
 
 game_ended = False
 
+conn_det = []
+
 elements = [
     "  ",
     "🚗",
@@ -54,14 +56,18 @@ def CheckKeys(sock: sock.SocketType, kill_queue: mp.Queue, name: str):
 
 
 def ConnectToServer(ip: str, port: int, name: str):
-    clientsocket = sock.socket(sock.AF_INET, sock.SOCK_STREAM)
-    clientsocket.connect((ip, port))
+    while True:
+         try:
+            clientsocket = sock.socket(sock.AF_INET, sock.SOCK_STREAM)
+            clientsocket.connect((ip, port))
 
-    intial_packet = f"INIT{name}"
+            intial_packet = f"INIT{name}"
 
-    clientsocket.sendall(bytes(intial_packet, "utf-8"))
+            clientsocket.sendall(bytes(intial_packet, "utf-8"))
 
-    return clientsocket
+            return clientsocket
+         except:
+              pass
 
 
 def GameLoop(sock: sock.SocketType, kill_queue: mp.Queue, name: str):
@@ -105,12 +111,35 @@ def GameLoop(sock: sock.SocketType, kill_queue: mp.Queue, name: str):
             break
 
     
+def connection_selection_func(kill_queue: mp.Queue, name: str, connection_selection, restart=False):
+    global conn_det
+    if connection_selection == "connect":
+            if not restart:
+                conn_det = input("Please specify the IP address and port, separated by a comma: ").split(",")
 
+            winsound.PlaySound(None, winsound.SND_PURGE)
+            print(f"Good luck, {name}!")
+
+            socket: sock.SocketType = ConnectToServer(conn_det[0], int(conn_det[1]), name)
+            CheckKeys(socket, kill_queue, name)
+
+    elif connection_selection == "new server":
+            print(f"Good luck, {name}!")
+            server_process = mp.Process(target=Server.CreateNewServer, args=(6089,kill_queue))
+            server_process.start()
+
+            winsound.PlaySound(None, winsound.SND_PURGE)
+            socket: sock.SocketType = ConnectToServer("localhost", 6089, name)
+            CheckKeys(socket, kill_queue, name)
+
+    else:
+            print("Invalid input. Please try again.")
+            main()
 
 
 if __name__ == "__main__":
-    def main():
-        kill_queue = mp.Queue()
+    def main(kill_q: mp.Queue = None, name_par: str = None, connect_selec = None, res = False):
+        kill_queue = kill_q or mp.Queue()
         winsound.PlaySound("assets/intro.wav", winsound.SND_FILENAME + winsound.SND_ASYNC + winsound.SND_LOOP)
         print("Welcome to",
               "\033[36m" "A"
@@ -146,31 +175,18 @@ r'''
         "Remember, if you press the Up arrow key, and the other player presses something else, the car will not move.\n"
         "However, if you two press the same button at the same time, then the car will move.")
         
-        name = input("What is your name? ")
+        name = name_par or input("What is your name? ")
         
-        connection_selection = input("Would you like to connect to a server, or create a new one? (Connect/New Server): ").lower()
+        connection_selection = connect_selec or input("Would you like to connect to a server, or create a new one? (Connect/New Server): ").lower()
 
-        if connection_selection == "connect":
-            conn_det = input("Please specify the IP address and port, separated by a comma: ").split(",")
+        connection_selection_func(kill_queue, name, connection_selection, restart=res)
 
-            winsound.PlaySound(None, winsound.SND_PURGE)
-            print(f"Good luck, {name}!")
+        restart = input("Would you like to play another game with the same settings? (Y/N)")
 
-            socket: sock.SocketType = ConnectToServer(conn_det[0], int(conn_det[1]), name)
-            CheckKeys(socket, kill_queue, name)
-
-        elif connection_selection == "new server":
-            print(f"Good luck, {name}!")
-            server_process = mp.Process(target=Server.CreateNewServer, args=(6089,kill_queue))
-            server_process.start()
-
-            winsound.PlaySound(None, winsound.SND_PURGE)
-            socket: sock.SocketType = ConnectToServer("localhost", 6089, name)
-            CheckKeys(socket, kill_queue, name)
-
+        if restart.lower() == 'y':
+            main(kill_queue, name, connection_selection, res=True)
         else:
-            print("Invalid input. Please try again.")
-            main()
+            pass
 
         return
     main()
