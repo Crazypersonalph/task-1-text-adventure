@@ -44,8 +44,8 @@ def start_game(queue: mp.Queue, keyQueue: mp.Queue, kill_queue: mp.Queue):
             if kill == True:
                 return
 
+        grid[random.randint(0,ROWS-1), -1] = random.choice([0,0,0,0,0,0,0,0,2])
         grid[:, :-1] = grid[:, 1:]
-        grid[random.randint(0,ROWS-1), -1] = random.choice([0,0,0,2])
 
         grid[car_y_pos, car_x_pos] += CAR_SYMBOL
 
