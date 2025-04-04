@@ -13,20 +13,20 @@ In order to get the most enjoyability out of the game, you must allow Python thr
 Please keep in mind that the game has not been designed for security but performance and ease, and so, I only recommend doing this on networks you trust and only on LANs.
 
 1. Go to "Allow an App through Firewall" on Windows
-![image of windows search](images/image.png)
+![image of windows search](assets/images/image.png)
 2. Within this program, click "Change settings". You may need administrator privileges.
-![change settings button](images/image2.png)
+![change settings button](assets/images/image2.png)
 3. Scroll down to where it says "python.exe", and tick the checkbox to the left of this to enable python to communicate for your respective network
-![allow python through firewall](images/image3.png)
+![allow python through firewall](assets/images/image3.png)
 
 For example:
 
 If you were on a public network, you would tick the far left checkbox on this python option:
 (See how the public option is ticked for this rule?)
-![public python](images/image4.png)
+![public python](assets/images/image4.png)
 
 If you were on a private network, you would tick the far left checkbox on this python option:
-![private python](images/image5.png)
+![private python](assets/images/image5.png)
 
 Click "Ok", and now Python has access to the network! Remember the server port is 6089. Afterwards, just reverse these steps to disable Python access to the network.
 
