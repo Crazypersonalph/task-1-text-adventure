@@ -16,4 +16,4 @@ OR
 Download the code as a zip file from the GitHub page under the `Code` dropdown menu above.
 ![code button](assets/images/code-button.png)
 
-![download zip](asstes/images/zip.png)
+![download zip](assets/images/zip.png)
