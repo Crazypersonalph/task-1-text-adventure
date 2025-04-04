@@ -14,3 +14,6 @@ Either use the Git commandline or your favourite Git GUI tool (e.g. `git clone h
 OR
 
 Download the code as a zip file from the GitHub page under the `Code` dropdown menu above.
+![code button](assets/images/code-button.png)
+
+![download zip](asstes/images/zip.png)
