@@ -224,7 +224,7 @@ r'''
 
         print("The aim of the game is to work with another player to control a car in order to"
         "dodge obstacles.\n"
-        "Your objective is to reach 1000 points or higher, and nominally, "
+        "Your objective is to reach 1000 points or higher, or nominally, "
         "to reach as high as possible\n"
         "You must use your arrow keys to change the lane in which your car is in, "
         "and have the same input as the other player.\n"
