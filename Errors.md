@@ -1,6 +1,6 @@
 # Error 1
 `ConnectionAbortedError: [WinError 10053] An established connection was aborted by the software in your host machine`
-This error means that the connection between the client and the server was prematurely closed by the client.
+This runtime error means that the connection between the client and the server was prematurely closed by the client.
 The error was caused in the server, and per the traceback, and can be linked to the function in which data is read.
 
 According the logging data, the server has successfully received and logged information. This indicates that the error perhaps might be occurring due to the socket being closed incorrectly. However, in the logs, nothing indicates the socket being closed by any code I have written.
@@ -16,7 +16,7 @@ Excerpt of logging:
 After a bit of thinking and reading the Python sockets documentation, I realised that for the connection to be maintained, the client must run a `while True:` loop to keep listening for data. If it stops listening for data, then the connection is prematurely closed.
 
 # Error 2
-This bug is a logic error, rather than a problem with the code. Upon both clients connecting, the server does not start the game, but rather, hangs. Client 2 in particular doesn't receive the first sent info array from the server. Something is wrong with the sleep function in the server gameloop.
+This bug is a logic error, rather than a problem with the runtime execution. Upon both clients connecting, the server does not start the game, but rather, hangs. Client 2 in particular doesn't receive the first sent info array from the server. Something is wrong with the sleep function in the server gameloop.
 
 According to the logging data, both clients are connecting, and have sucessfully sent their names through to the server.
 
@@ -24,7 +24,9 @@ I fixed this by making the server game loop asynchronous, however this caused a 
 
 I fixed all these issues by implementing a queue system (much like the current_log in my pseudocode) that gives the server main loop a list of all the users connected, instead of the list being empty when the process forked.
 
-I also moved the generation of the initial game frame to main game loop. Now the game runs smoothly.
+In order to fix it, I moved all the relevant code to a separate files and conducted unit tests to see what inputs would cause problems. Afterwards, I moved it back.
+
+I also moved the generation of the initial game frame to main game loop; now the game runs smoothly.
 
 # Error 3
 ```
@@ -32,11 +34,13 @@ json.decoder.JSONDecodeError: Extra data: line 1 column 161 (char 160)
 ```
 This error was a runtime error. It happened due to how in the TCP protocol, a sending of a buffer of 4096 bytes is not equal to the receiving of a buffer of 4096 bytes. This means that one socket receive could include multiple socket message sends.
 
+This was also fixed using unit testing, as I could see which inputs from the server were being fragmented, causing this error to occur.
+
 There are two main ways to solve such an error.
 1. Including the message length as a prefix to the message
 2. Separating each message with a delimiter.
 
-I went with the second option, as it is a quick and dirty fix, that works fine for my purposes.
+I went with the second option, as it is the easier fix that works fine for my purposes.
 
 # Error 4
 This was another logic error. It was found through running the game and observing output. In this error, the output of the road was not being drawn properly, instead, with overlapping emojis and lines cut off two characters in.
@@ -46,4 +50,8 @@ After fiddling with different methods of printing and ANSI escape codes, I reali
 I fixed this by solidfying my lane markers as their own print statements before and after the lines are generated and drawn, and in the process, making the lane marker generation responsive to changes in the column and row variables.
 
 # Error 5
-This was another logic error. The game was freezing in the middle of playtime due to no reason, and in the server logs, the server was receiving key inputs, but wasn't sending new game frames to the clients.
+This was another runtime error. The game was freezing in the middle of playtime due to no reason, and in the server logs, the server was receiving key inputs, but wasn't sending new game frames to the clients.
+
+After unit testing and debugging, I realised that it was due to the kill handling of the program being unstable; using dangerous logic.
+
+I fixed this by using the Python multiprocessing Queue in-built function `.empty()` to check when the queue was empty, rather than using `__len__()`, which is more reserved for strings and can cause undefined behaviour.
