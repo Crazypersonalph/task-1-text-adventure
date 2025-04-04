@@ -196,7 +196,7 @@ r'''
         print('\033[?25l', end="")
 
         if not res: # If we aren't restarting
-            print("What car would you like?")
+            print("What car would you like? Select it with your right or left arrow keys, and then press enter!")
             print(f'<< {car_select_array[current_car_selection]} >>', end='\r')
             while True:
                 if msvcrt.kbhit():
