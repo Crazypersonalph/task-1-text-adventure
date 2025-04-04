@@ -118,7 +118,10 @@ def game_loop(game_sock: sock.SocketType, kill_queue: mp.Queue, name: str, game_
             logger.info("[CLIENT] Received data: %s", data)
             if b"LOSE" in data: # Stop the game if we lose
                 # Stop music, close sockets, put True into kill_queue
-                print(f"You lost, {name}! Your score was {data.decode('utf-8')[5:]}")
+                if int(data.decode('utf-8')[5:]) >= 1000:
+                    print(f"You won, {name}! Your score was {data.decode('utf-8')[5:]}")
+                else:
+                    print(f"You lost, {name}! Your score was {data.decode('utf-8')[5:]}")
                 kill_queue.put_nowait(True)
                 game_ended = True
                 game_sock.close()
