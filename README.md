@@ -1,9 +1,9 @@
 # Alphons's Networked Car Racing Game
-See INFO.md for details about the game
+See `INFO.md` for details about the game
 
-For information about just a few bugs I found and fixed, see Errors.md
+For information about just a few bugs I found and fixed, see `ERRORS.md`
 
-For my pseudocode, see pseudocode.md
+For my pseudocode, see `PSEUDOCODE.md`
 
 ### To play the game:
 Download NumPy (`pip install numpy`) and run `python Client.py`.
